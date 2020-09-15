@@ -4,3 +4,5 @@ facepics
 led / optimized / DLL files
 __pycache__/
 *$py.class
+venv/
+.DS_Store

@@ -6,12 +6,30 @@ import align.detect_face as detect_face
 import cv2
 import numpy as np
 import tensorflow as tf
+import torch
 from lib.face_utils import judge_side_face
 from lib.utils import Logger, mkdir
 from project_root_dir import project_dir
 from src.sort import Sort
 
+from constant import BLAZEFACE_ANCHORS_PATH, BLAZEFACE_WEIGHTS_PATH
+from blazeface.blazeface import BlazeFace
+
 logger = Logger()
+
+
+class BlazeFaceDetector:
+    def __init__(self):
+        self.H = 360
+        self.W = 360
+        self.C = 3
+
+        self.gpu = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.net = BlazeFace().to(self.gpu)
+
+        self.net.load_weights(BLAZEFACE_WEIGHTS_PATH)
+        self.net.load_anchors(BLAZEFACE_ANCHORS_PATH)
+
 
 
 def main():
@@ -73,6 +91,8 @@ def main():
                         mtcnn_starttime = time()
                         faces, points = detect_face.detect_face(r_g_b_frame, minsize, pnet, rnet, onet, threshold,
                                                                 factor)
+                        print('points = ', points)
+                        # print('faces = ', faces)
                         logger.info("MTCNN detect face cost time : {} s".format(
                             round(time() - mtcnn_starttime, 3)))  # mtcnn detect ,slow
                         face_sums = faces.shape[0]
@@ -98,9 +118,10 @@ def main():
                                     tolist = squeeze_points.tolist()
                                     facial_landmarks = []
                                     for j in range(5):
-                                        item = [tolist[j], tolist[(j + 5)]]
+                                        item = [tolist[j], tolist[(j + 5)]] # ORDER OF FACIAL POINTS
                                         facial_landmarks.append(item)
-                                    if args.face_landmarks:
+                                    # if args.face_landmarks:
+                                    if True:
                                         for (x, y) in facial_landmarks:
                                             cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
                                     cropped = frame[bb[1]:bb[3], bb[0]:bb[2], :].copy()
