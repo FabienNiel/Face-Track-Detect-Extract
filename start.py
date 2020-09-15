@@ -37,8 +37,8 @@ class BlazeFaceDetector:
 
         faces = []
         facial_landmarks = []
+        print(detections)
         for detection in detections:
-            print(detection)
             ymin = detection[0] * rgb_frame.shape[0]
             xmin = detection[1] * rgb_frame.shape[1]
             ymax = detection[2] * rgb_frame.shape[0]
@@ -49,20 +49,23 @@ class BlazeFaceDetector:
             ymax += 0.1 * ymax
             xmax += 0.1 * xmax
 
-            ymin = int(ymin)
-            xmin = int(xmin)
-            ymax = int(ymax)
-            xmax = int(xmax)
+            faces.append([int(ymin), int(xmin), int(ymax), int(xmax), detection[-1]])
 
-            faces.append([ymin, xmin, ymax, xmax, detection[-1]])
+            x_left_eyes = detection[6] * rgb_frame.shape[1]
+            y_left_eyes = detection[7] * rgb_frame.shape[0]
+            x_right_eyes = detection[4] * rgb_frame.shape[1]
+            y_right_eyes = detection[5] * rgb_frame.shape[0]
+            x_nose = detection[8] * rgb_frame.shape[1]
+            y_nose = detection[9] * rgb_frame.shape[0]
+            x_left_ear = detection[14] * rgb_frame.shape[1]
+            y_left_ear = detection[15] * rgb_frame.shape[0]
+            x_right_ear = detection[12] * rgb_frame.shape[1]
+            y_right_ear = detection[13] * rgb_frame.shape[0]
 
-            ymin = detection[0] * rgb_frame.shape[0]
-            xmin = detection[1] * rgb_frame.shape[1]
-            ymax = detection[2] * rgb_frame.shape[0]
-            xmax = detection[3] * rgb_frame.shape[1]
+            facial_landmarks.append([[int(x_left_eyes), int(y_left_eyes)], [int(x_right_eyes), int(y_right_eyes)], [int(x_nose), int(y_nose)],
+                                     [int(x_left_ear), int(y_left_ear)], [int(x_right_ear), int(y_right_ear)]])
 
-
-        return faces
+        return np.array(faces), facial_landmarks
 
 def main():
     global colours, img_size
@@ -114,10 +117,8 @@ def main():
             if c % detect_interval == 0:
                 img_size = np.asarray(frame.shape)[0:2]
                 mtcnn_starttime = time()
-                faces, points = detect_face.detect_face(r_g_b_frame, minsize, pnet, rnet, onet, threshold,
-                                                        factor)
-                print('points = ', points)
-                # print('faces = ', faces)
+                faces, facial_landmarks = face_detector.detect_face(r_g_b_frame)
+                print('faces = ', faces)
                 logger.info("MTCNN detect face cost time : {} s".format(
                     round(time() - mtcnn_starttime, 3)))  # mtcnn detect ,slow
                 face_sums = faces.shape[0]
@@ -139,20 +140,15 @@ def main():
                             bb = np.array(det, dtype=np.int32)
 
                             # use 5 face landmarks  to judge the face is front or side
-                            squeeze_points = np.squeeze(points[:, i])
-                            tolist = squeeze_points.tolist()
-                            facial_landmarks = []
-                            for j in range(5):
-                                item = [tolist[j], tolist[(j + 5)]] # ORDER OF FACIAL POINTS
-                                facial_landmarks.append(item)
                             # if args.face_landmarks:
                             if True:
-                                for (x, y) in facial_landmarks:
+                                for (x, y) in facial_landmarks[i]:
+                                    print('facial landmarks = ', facial_landmarks[i])
                                     cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
                             cropped = frame[bb[1]:bb[3], bb[0]:bb[2], :].copy()
 
                             dist_rate, high_ratio_variance, width_rate = judge_side_face(
-                                np.array(facial_landmarks))
+                                np.array(facial_landmarks[i]))
 
                             # face addtional attribute(index 0:face score; index 1:0 represents front face and 1 for side face )
                             item_list = [cropped, score, dist_rate, high_ratio_variance, width_rate]
