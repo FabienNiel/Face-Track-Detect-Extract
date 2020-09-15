@@ -36,7 +36,7 @@ class BlazeFaceDetector:
         detections = self.net.predict_on_image(resized)
 
         faces = []
-        points = []
+        facial_landmarks = []
         for detection in detections:
             print(detection)
             ymin = detection[0] * rgb_frame.shape[0]
@@ -56,6 +56,10 @@ class BlazeFaceDetector:
 
             faces.append([ymin, xmin, ymax, xmax, detection[-1]])
 
+            ymin = detection[0] * rgb_frame.shape[0]
+            xmin = detection[1] * rgb_frame.shape[1]
+            ymax = detection[2] * rgb_frame.shape[0]
+            xmax = detection[3] * rgb_frame.shape[1]
 
 
         return faces
