@@ -35,6 +35,8 @@ class BlazeFaceDetector:
         resized = cv2.resize(rgb_frame, dim, interpolation=cv2.INTER_AREA)
         detections = self.net.predict_on_image(resized)
 
+        faces = []
+        points = []
         for detection in detections:
             print(detection)
             ymin = detection[0] * rgb_frame.shape[0]
@@ -52,8 +54,11 @@ class BlazeFaceDetector:
             ymax = int(ymax)
             xmax = int(xmax)
 
-            list_coordinates.append([ymin, xmin, ymax, xmax])
+            faces.append([ymin, xmin, ymax, xmax, detection[-1]])
 
+
+
+        return faces
 
 def main():
     global colours, img_size

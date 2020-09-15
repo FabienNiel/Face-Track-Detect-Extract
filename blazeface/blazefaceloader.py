@@ -15,7 +15,7 @@ from constants import BLAZEFACE_WEIGHTS_PATH, BLAZEFACE_ANCHORS_PATH, RECTANGLE_
 logger = logging.getLogger(__name__)
 
 
-class BlazeFaceLoader():
+class BlazeFaceLoader:
     def __init__(self, config_imageloader: Dict[str, Any]):
         self.H = config_imageloader['H']
         self.W = config_imageloader['W']
