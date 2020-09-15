@@ -2,10 +2,8 @@ import argparse
 import os
 from time import time
 
-import align.detect_face as detect_face
 import cv2
 import numpy as np
-import tensorflow as tf
 import torch
 from lib.face_utils import judge_side_face
 from lib.utils import Logger, mkdir
@@ -44,12 +42,12 @@ class BlazeFaceDetector:
             ymax = detection[2] * rgb_frame.shape[0]
             xmax = detection[3] * rgb_frame.shape[1]
 
-            ymin -= 0.5 * ymin
-            xmin -= 0.3 * xmin
-            ymax += 0.1 * ymax
-            xmax += 0.1 * xmax
+            # ymin -= 0.5 * ymin
+            # xmin -= 0.3 * xmin
+            # ymax += 0.1 * ymax
+            # xmax += 0.1 * xmax
 
-            faces.append([int(ymin), int(xmin), int(ymax), int(xmax), detection[-1]])
+            faces.append([int(xmin), int(ymin), int(xmax), int(ymax), detection[-1]])
 
             x_left_eyes = detection[6] * rgb_frame.shape[1]
             y_left_eyes = detection[7] * rgb_frame.shape[0]
@@ -99,7 +97,9 @@ def main():
         video_name = os.path.join(videos_dir, filename)
         directoryname = os.path.join(output_path, filename.split('.')[0])
         logger.info('Video_name:{}'.format(video_name))
-        cam = cv2.VideoCapture(video_name)
+        # cam = cv2.VideoCapture(video_name)
+        cam = cv2.VideoCapture(0)
+
         c = 0
         while True:
             final_faces = []

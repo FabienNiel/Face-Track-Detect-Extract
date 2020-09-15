@@ -41,7 +41,7 @@ class KalmanBoxTracker(object):
         self.hit_streak = 0
         self.age = 0
 
-        self.predict_num = 0  # 解决画面中无人脸检测到时而导致的原有追踪器人像预测的漂移bug
+        self.predict_num = 0
 
         # addtional fields
         self.face_addtional_attribute = []
