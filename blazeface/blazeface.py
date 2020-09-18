@@ -75,7 +75,7 @@ class BlazeFace(nn.Module):
         self.y_scale = 128.0
         self.h_scale = 128.0
         self.w_scale = 128.0
-        self.min_score_thresh = 0.75
+        self.min_score_thresh = 0.8
         self.min_suppression_threshold = 0.3
 
         self._define_layers()

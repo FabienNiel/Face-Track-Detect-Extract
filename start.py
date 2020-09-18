@@ -10,7 +10,7 @@ from lib.utils import Logger, mkdir
 from project_root_dir import project_dir
 from src.sort import Sort
 
-from constant import BLAZEFACE_ANCHORS_PATH, BLAZEFACE_WEIGHTS_PATH
+from constant import BLAZEFACE_ANCHORS_PATH, BLAZEFACE_WEIGHTS_PATH, RECTANGLE_POSITION_USER
 from blazeface.blazeface import BlazeFace
 
 logger = Logger()
@@ -65,6 +65,14 @@ class BlazeFaceDetector:
 
         return np.array(faces), facial_landmarks
 
+
+def crop_img_rectangle(img):
+    (xmin, ymin), (xmax, ymax) = RECTANGLE_POSITION_USER
+
+    return img[ymin:ymax, xmin:xmax, :]
+
+
+
 def main():
     global colours, img_size
     args = parse_args()
@@ -99,6 +107,7 @@ def main():
         logger.info('Video_name:{}'.format(video_name))
         # cam = cv2.VideoCapture(video_name)
         cam = cv2.VideoCapture(0)
+        # cam = cv2.VideoCapture("rtsp://192.168.1.18:554/1/h264minor")
 
         c = 0
         while True:
@@ -111,14 +120,13 @@ def main():
             if frame is None:
                 logger.warning("frame drop")
                 break
-
+            frame = crop_img_rectangle(frame)
             frame = cv2.resize(frame, (0, 0), fx=scale_rate, fy=scale_rate)
             r_g_b_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if c % detect_interval == 0:
                 img_size = np.asarray(frame.shape)[0:2]
                 mtcnn_starttime = time()
                 faces, facial_landmarks = face_detector.detect_face(r_g_b_frame)
-                print('faces = ', faces)
                 logger.info("MTCNN detect face cost time : {} s".format(
                     round(time() - mtcnn_starttime, 3)))  # mtcnn detect ,slow
                 face_sums = faces.shape[0]
@@ -143,7 +151,7 @@ def main():
                             # if args.face_landmarks:
                             if True:
                                 for (x, y) in facial_landmarks[i]:
-                                    print('facial landmarks = ', facial_landmarks[i])
+                                    # cv2.rectangle(frame, RECTANGLE_POSITION_USER[0], RECTANGLE_POSITION_USER[1], (0, 255, 0), 3)
                                     cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
                             cropped = frame[bb[1]:bb[3], bb[0]:bb[2], :].copy()
 
@@ -161,6 +169,7 @@ def main():
             c += 1
 
             for d in trackers:
+                print(d)
                 if not no_display:
                     d = d.astype(np.int32)
                     cv2.rectangle(frame, (d[0], d[1]), (d[2], d[3]), colours[d[4] % 32, :] * 255, 3)
