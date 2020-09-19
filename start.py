@@ -105,9 +105,7 @@ def main():
         video_name = os.path.join(videos_dir, filename)
         directoryname = os.path.join(output_path, filename.split('.')[0])
         logger.info('Video_name:{}'.format(video_name))
-        # cam = cv2.VideoCapture(video_name)
-        cam = cv2.VideoCapture(0)
-        # cam = cv2.VideoCapture("rtsp://192.168.1.18:554/1/h264minor")
+        cam = cv2.VideoCapture("rtsp://192.168.1.18:554/1/h264minor")
 
         c = 0
         while True:
